@@ -4,111 +4,76 @@ import { useEffect, useRef, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import ThinkingIndicator from "./ThinkingIndicator";
 
-
 interface Props {
   messages: any[];
 }
 
-
-export default function ChatMessages({
-  messages,
-}: Props) {
-
+export default function ChatMessages({ messages }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [isAtBottom, setIsAtBottom] = useState(true);
 
-
   const handleScroll = () => {
-
     const element = scrollRef.current;
 
     if (!element) return;
 
-
     const atBottom =
-      element.scrollHeight - element.scrollTop <=
-      element.clientHeight + 80;
-
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 80;
 
     setIsAtBottom(atBottom);
   };
 
-
   const scrollToBottom = () => {
-
     const element = scrollRef.current;
 
     if (!element) return;
-
 
     element.scrollTo({
       top: element.scrollHeight,
       behavior: "smooth",
     });
-
   };
 
-
   useEffect(() => {
-
     if (isAtBottom) {
       scrollToBottom();
     }
-
   }, [messages, isAtBottom]);
 
-
-
   const isThinking =
-    messages.length > 0 &&
-    messages[messages.length - 1].role === "user";
-
-
+    messages.length > 0 && messages[messages.length - 1].role === "user";
 
   return (
-
     <section
       ref={scrollRef}
       onScroll={handleScroll}
       className="relative flex-1 overflow-y-auto px-6 py-8"
     >
-
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-
-
         {messages.map((message) => (
-
           <ChatMessage
             key={message.id}
             role={message.role}
             content={
               message.parts
-                ?.filter(
-                  (part:any)=>part.type==="text"
-                )
-                .map(
-                  (part:any)=>part.text
-                )
+                ?.filter((part: any) => part.type === "text")
+                .map((part: any) => part.text)
                 .join("") ?? ""
             }
           />
-
         ))}
 
-
-
         {isThinking && (
-          <ThinkingIndicator />
+          <div className="flex flex-col gap-3">
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-64 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+          </div>
         )}
-
-
       </div>
 
-
-
       {!isAtBottom && (
-
         <button
           onClick={scrollToBottom}
           className="
@@ -128,12 +93,7 @@ export default function ChatMessages({
         >
           Jump to latest
         </button>
-
       )}
-
-
-
     </section>
-
   );
 }

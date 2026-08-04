@@ -3,80 +3,46 @@
 import { useState } from "react";
 import { Send, Square } from "lucide-react";
 
-
 interface Props {
-
-  sendMessage: (message: {
-    text: string;
-  }) => void;
+  sendMessage: (message: { text: string }) => void;
 
   stop: () => void;
 
   status: string;
-
 }
 
-
-
 export default function ChatInput({
-
   sendMessage,
 
   stop,
 
   status,
-
 }: Props) {
-
-
   const [input, setInput] = useState("");
 
-
-  const isGenerating =
-    status === "streaming";
-
-
+  const isGenerating = status === "streaming";
+  const isEmpty = !input.trim();
 
   function submit() {
-
     if (!input.trim() || isGenerating) return;
-
 
     sendMessage({
       text: input.trim(),
     });
 
-
     setInput("");
-
   }
 
-
-
-  function handleKeyDown(
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ) {
-
-    if (
-      e.key === "Enter" &&
-      !e.shiftKey
-    ) {
-
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
 
       submit();
-
     }
-
   }
 
-
-
   return (
-
     <footer className="border-t bg-background p-3 sm:p-4">
-
-
       <div
         className="
         mx-auto
@@ -87,24 +53,13 @@ export default function ChatInput({
         sm:gap-3
         "
       >
-
-
         <textarea
-
           value={input}
-
-          onChange={(e)=>
-            setInput(e.target.value)
-          }
-
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-
           disabled={isGenerating}
-
           placeholder="Ask anything..."
-
           rows={1}
-
           className="
           min-h-12
           max-h-40
@@ -121,63 +76,35 @@ export default function ChatInput({
           disabled:opacity-60
           sm:px-4
           "
-
         />
 
-
-
         <button
-
-          onClick={
-            isGenerating
-            ? stop
-            : submit
-          }
-
-          aria-label={
-            isGenerating
-            ? "Stop generation"
-            : "Send message"
-          }
-
+          onClick={isGenerating ? stop : submit}
+          disabled={!isGenerating && isEmpty}
+          aria-label={isGenerating ? "Stop generation" : "Send message"}
           className="
-          flex
-          h-12
-          w-12
-          shrink-0
-          items-center
-          justify-center
-          rounded-xl
-          bg-primary
-          text-primary-foreground
-          transition
-          hover:opacity-90
-          "
-
+    flex
+    h-12
+    w-12
+    shrink-0
+    items-center
+    justify-center
+    rounded-xl
+    bg-primary
+    text-primary-foreground
+    transition
+    hover:opacity-90
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  "
         >
-
-          {
-            isGenerating
-
-            ?
-
-            <Square className="h-5 w-5"/>
-
-            :
-
-            <Send className="h-5 w-5"/>
-
-          }
-
-
+          {isGenerating ? (
+            <Square className="h-5 w-5" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
         </button>
-
-
       </div>
-
-
     </footer>
-
   );
-
 }
