@@ -2,10 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import ChatMessage from "./ChatMessage";
-import ThinkingIndicator from "./ThinkingIndicator";
+import ToolResult from "./ToolResult";
+
+interface MessagePart {
+  type: string;
+  text?: string;
+  toolName?: string;
+  result?: unknown;
+}
+
+interface Message {
+  id: string;
+  role: "system" | "user" | "assistant";
+  parts?: MessagePart[];
+}
 
 interface Props {
-  messages: any[];
+  messages: Message[];
 }
 
 export default function ChatMessages({ messages }: Props) {
@@ -19,7 +32,8 @@ export default function ChatMessages({ messages }: Props) {
     if (!element) return;
 
     const atBottom =
-      element.scrollHeight - element.scrollTop <= element.clientHeight + 80;
+      element.scrollHeight - element.scrollTop <=
+      element.clientHeight + 80;
 
     setIsAtBottom(atBottom);
   };
@@ -42,7 +56,8 @@ export default function ChatMessages({ messages }: Props) {
   }, [messages, isAtBottom]);
 
   const isThinking =
-    messages.length > 0 && messages[messages.length - 1].role === "user";
+    messages.length > 0 &&
+    messages[messages.length - 1].role === "user";
 
   return (
     <section
@@ -51,18 +66,51 @@ export default function ChatMessages({ messages }: Props) {
       className="relative flex-1 overflow-y-auto px-6 py-8"
     >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            role={message.role}
-            content={
-              message.parts
-                ?.filter((part: any) => part.type === "text")
-                .map((part: any) => part.text)
-                .join("") ?? ""
-            }
-          />
-        ))}
+        {messages.map((message) => {
+          const textContent =
+            message.parts
+              ?.filter((part) => part.type === "text")
+              .map((part) => part.text ?? "")
+              .join("") ?? "";
+
+          const toolParts =
+            message.parts?.filter(
+              (part) =>
+                part.type === "tool-result" ||
+                part.type.startsWith("tool-")
+            ) ?? [];
+
+          return (
+            <div key={message.id} className="flex flex-col gap-3">
+              {message.role !== "system" && (
+                <ChatMessage
+                  role={message.role}
+                  content={textContent}
+                />
+              )}
+
+              {toolParts.map((part, index) => {
+                const toolName =
+                  part.toolName ??
+                  part.type.replace(/^tool-/, "") ??
+                  "Tool";
+
+                const result =
+                  typeof part.result === "string"
+                    ? part.result
+                    : JSON.stringify(part.result ?? "", null, 2);
+
+                return (
+                  <ToolResult
+                    key={`${message.id}-tool-${index}`}
+                    toolName={toolName}
+                    result={result}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
 
         {isThinking && (
           <div className="flex flex-col gap-3">
